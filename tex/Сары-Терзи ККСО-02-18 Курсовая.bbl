@@ -1,0 +1,52 @@
+% $ biblatex auxiliary file $
+% $ biblatex bbl format version 3.0 $
+% Do not modify the above lines!
+%
+% This is an auxiliary file used by the 'biblatex' package.
+% This file may safely be deleted. It will be recreated by
+% biber as required.
+%
+\begingroup
+\makeatletter
+\@ifundefined{ver@biblatex.sty}
+  {\@latex@error
+     {Missing 'biblatex' package}
+     {The bibliography requires the 'biblatex' package.}
+      \aftergroup\endinput}
+  {}
+\endgroup
+
+
+\refsection{0}
+  \datalist[entry]{nty/global//global/global}
+    \entry{Checheta}{book}{}
+      \name{author}{1}{}{%
+        {{hash=987ab86e4f0f282c696384c40df0c1eb}{%
+           family={С.И.},
+           familyi={С\bibinitperiod},
+           given={Чечёта},
+           giveni={Ч\bibinitperiod}}}%
+      }
+      \list{publisher}{1}{%
+        {МЦНМО}%
+      }
+      \strng{namehash}{987ab86e4f0f282c696384c40df0c1eb}
+      \strng{fullhash}{987ab86e4f0f282c696384c40df0c1eb}
+      \strng{bibnamehash}{987ab86e4f0f282c696384c40df0c1eb}
+      \strng{authorbibnamehash}{987ab86e4f0f282c696384c40df0c1eb}
+      \strng{authornamehash}{987ab86e4f0f282c696384c40df0c1eb}
+      \strng{authorfullhash}{987ab86e4f0f282c696384c40df0c1eb}
+      \field{sortinit}{С}
+      \field{sortinithash}{ce0cf45cce19ff0db4b19e723e9385a4}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{isbn}{978-5-94057-701-0}
+      \field{title}{Введение в дискретную теорию информации и кодирования}
+      \field{year}{2011}
+      \field{pages}{224}
+      \range{pages}{1}
+    \endentry
+  \enddatalist
+\endrefsection
+\endinput
+

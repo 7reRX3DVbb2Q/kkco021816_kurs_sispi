@@ -1,0 +1,12 @@
+% Encoding: UTF-8
+
+@Book{Checheta,
+  author    = {Чечёта С.И.},
+  title     = {Введение в дискретную теорию информации и кодирования},
+  year      = {2011},
+  publisher = {МЦНМО},
+  isbn      = {978-5-94057-701-0},
+  pages     = {224},
+}
+
+@Comment{jabref-meta: databaseType:biblatex;}

@@ -1,0 +1,15 @@
+[0] Config.pm:304> INFO - This is Biber 2.12
+[1] Config.pm:307> INFO - Logfile is 'Ð¡Ð°ÑÑ-Ð¢ÐµÑÐ·Ð¸ ÐÐÐ¡Ð-02-18 ÐÑÑÑÐ¾Ð²Ð°Ñ.blg'
+[40] biber:315> INFO - === Пн мая 24, 2021, 21:09:06
+[263] Biber.pm:371> INFO - Reading './Сары-Терзи ККСО-02-18 Курсовая.bcf'
+[370] Biber.pm:889> INFO - Found 1 citekeys in bib section 0
+[402] Biber.pm:4093> INFO - Processing section 0
+[422] Biber.pm:4254> INFO - Looking for bibtex format file 'bibliography/bib.bib' for section 0
+[424] bibtex.pm:1512> INFO - LaTeX decoding ...
+[428] bibtex.pm:1329> INFO - Found BibTeX data source 'bibliography/bib.bib'
+[478] UCollate.pm:68> INFO - Overriding locale 'en-US' defaults 'variable = shifted' with 'variable = non-ignorable'
+[478] UCollate.pm:68> INFO - Overriding locale 'en-US' defaults 'normalization = NFD' with 'normalization = prenormalized'
+[478] Biber.pm:3921> INFO - Sorting list 'nty/global//global/global' of type 'entry' with template 'nty' and locale 'en-US'
+[478] Biber.pm:3927> INFO - No sort tailoring available for locale 'en-US'
+[482] bbl.pm:636> INFO - Writing 'Ð¡Ð°ÑÑ-Ð¢ÐµÑÐ·Ð¸ ÐÐÐ¡Ð-02-18 ÐÑÑÑÐ¾Ð²Ð°Ñ.bbl' with encoding 'UTF-8'
+[483] bbl.pm:739> INFO - Output to Ð¡Ð°ÑÑ-Ð¢ÐµÑÐ·Ð¸ ÐÐÐ¡Ð-02-18 ÐÑÑÑÐ¾Ð²Ð°Ñ.bbl

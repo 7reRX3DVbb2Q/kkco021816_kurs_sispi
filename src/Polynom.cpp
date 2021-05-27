@@ -8,14 +8,12 @@ size_t Polynom::deg() const
     {
         throw std::runtime_error("Полином не инициализирован");
     }
-    for ( i = coefficients.size() - 1; i >= 0 && coefficients[i] == 0; i--)
-    {}
     
-    return i;
+    return coefficients.size() - 1;
 }
+
 size_t Polynom::deg(size_t new_deg, unsigned char c)
 {
-    coefficients.clear();
     coefficients.resize(new_deg, c);
     return coefficients.size() - 1;
 }
@@ -37,48 +35,129 @@ void Polynom::operator()(unsigned char c)
     }
     
 }
+
 void Polynom::clear()
 {
     coefficients.clear();
 }
-void Polynom::div(const Polynom& u, const Polynom& v, Polynom& q, Polynom& r)
-{
-    r = u;
-    
-    q.clear();
-    q.deg(u.deg(), 0);
 
-    for (signed long long k = u.deg() - v.deg(); k >= 0; k--)
-    {
-        q[k] = r[v.deg() + k];
-        for (signed long long j = v.deg() + k; j >= k; j--)
-        {
-            r[j] ^= q[k]*v[j-k];
-        }
-    }
-    r.coefficients.resize(r.deg() + 1);
-    q.coefficients.resize(q.deg() + 1);
+void Polynom::mul_pow_x(size_t n)
+{
+    coefficients.resize(coefficients.size() + n, 0);
 }
 
-Polynom Polynom:: operator/ (Polynom& v)
+void Polynom::del_nulls_in_begin()
+{
+    while (coefficients.size() > 0 && coefficients.front() == 0)
+    {
+        coefficients.erase(coefficients.begin(), coefficients.begin() + 1);
+    }
+    
+}
+
+void Polynom::div(const Polynom& u, const Polynom& v, Polynom& q, Polynom& r)
+{
+    if(v[0] == 0)
+    {
+        throw std::runtime_error("Деление на 0");
+    }
+    r = u;
+    q.clear();
+    if(u.deg() >= v.deg())
+    {
+        for (long long k = 0; k <= u.deg() - v.deg(); k++ )
+        {
+            q.coefficients.push_back(r.coefficients[0]);
+            for (size_t j = 0; j <= v.deg(); j++)
+            {
+                r[j] ^= q[k]*v[j];
+            }
+            r.coefficients.erase(r.coefficients.begin(), r.coefficients.begin() + 1);
+        }
+        r.del_nulls_in_begin();
+        if(r.coefficients.size() == 0)
+        {
+            r.coefficients.push_back(0);
+        }
+    }
+    else
+    {
+        q.coefficients.push_back(0);
+    }
+    
+}
+
+void Polynom::sum(Polynom& a, const Polynom& b, const Polynom& c)
+{
+    const Polynom* max;
+    const Polynom* min;
+    if(c.deg() > b.deg())
+    {
+        max = &c;
+        min = &b;
+    }
+    else
+    {
+        max = &b;
+        min = &c;
+    }
+    a.coefficients.resize(max->deg() + 1);
+    #define delta (max->deg() - min->deg())
+    for (size_t i = 0; i < delta; i++)
+    {
+        a[i] = max->coefficients[i];
+    }
+    
+    for (size_t i = delta; i <= max->deg(); i++)
+    {
+        a.coefficients[i] = max->coefficients[i]^min->coefficients[i - delta];
+    }
+    #undef delta
+}
+
+Polynom Polynom:: operator/ (const Polynom& v) const
 {
     Polynom q, r;
     div(*this, v, q, r);
     return q;
 }
-Polynom Polynom:: operator% (Polynom& v)
+
+Polynom Polynom:: operator% (const Polynom& v) const
 {
     Polynom q, r;
     div(*this, v, q, r);
     return r;
 }
 
+Polynom Polynom:: operator+ (const Polynom& v) const
+{
+    Polynom cp;
+    sum(cp, *this, v);
+    return cp;
+}
+
+Polynom Polynom::operator- (const Polynom& v) const
+{
+    return operator+(v);
+}
+
 Polynom::Polynom()
 {}
 
 Polynom::Polynom(std::string str)
-{
-    for (long i = str.length() - 1; i >= 0; i--)
+{   
+    size_t i;
+    bool is_null = false;
+    for (i = 0; i < str.length() && str[i] != '1'; i++)
+    {
+        if (str[i] == 0)
+        {
+            is_null = true;
+        }
+        
+    }
+    
+    for (; i < str.length(); i++)
     {
         if(str[i] == '1')
         {
@@ -89,5 +168,74 @@ Polynom::Polynom(std::string str)
             coefficients.push_back(0);
         }
     }
+    if(i == str.length() && is_null)
+    {
+        coefficients.push_back(0);
+    }
     
 }
+
+Polynom::Polynom(uint64_t number)
+{
+    uint64_t i = (uint64_t)1<<(sizeof(number)*8 - 1);
+    while (i != 0 && (number&i) == 0)
+    {
+        i>>=1;
+    }
+    if(i == 0)
+    {
+        coefficients.push_back(0);
+    }
+    while (i != 0)
+    {
+        coefficients.push_back((number&i) > 0);
+        i>>=1;
+    }
+    
+    
+}
+
+size_t Polynom::weight() const
+{
+    size_t weight = 0;
+    for (size_t i = 0; i < coefficients.size(); i++)
+    {
+        if(coefficients[i] == 1)
+        {
+            weight++;
+        }
+    }
+    return weight;
+}
+
+void Polynom::cyclic_left_shift(size_t n)
+{
+    size_t N = n%coefficients.size();
+    coefficients.insert(coefficients.end(), coefficients.begin(), coefficients.begin() + N);
+    coefficients.erase(coefficients.begin(), coefficients.begin() + N);
+}
+
+void Polynom::cyclic_right_shift(size_t n)
+{
+    size_t N = n%coefficients.size();
+    std::vector<unsigned char> tmp(coefficients.end() - n, coefficients.end());
+    coefficients.insert(coefficients.begin(), tmp.begin(), tmp.end());
+    coefficients.erase(coefficients.end() - N, coefficients.end());
+}
+
+void Polynom::shift_left(size_t n)
+{
+    size_t N = std::min(n, coefficients.size());
+    coefficients.erase(coefficients.begin(), coefficients.begin() + N);
+    coefficients.insert(coefficients.end(), N, 0);
+
+}
+
+void Polynom::shift_right(size_t n)
+{
+    size_t N = std::min(n, coefficients.size());
+    coefficients.erase(coefficients.end() - N, coefficients.end());
+    coefficients.insert(coefficients.begin(), N, 0);
+}
+
+

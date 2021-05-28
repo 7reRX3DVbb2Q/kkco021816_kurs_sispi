@@ -9,36 +9,32 @@ size_t Polynom::deg() const
         throw std::runtime_error("Полином не инициализирован");
     }
     
-    return coefficients.size() - 1;
-}
-
-size_t Polynom::deg(size_t new_deg, unsigned char c)
-{
-    coefficients.resize(new_deg, c);
-    return coefficients.size() - 1;
+    return coefficients.size() - index_senior_coefficient - 1;
 }
 
 unsigned char& Polynom::operator[] (size_t i)
 {
-    return coefficients[i];
-}
-const unsigned char& Polynom::operator[] (size_t i) const
-{
-    return coefficients[i];
+    return coefficients[i + index_senior_coefficient];
 }
 
-void Polynom::operator()(unsigned char c)
+const unsigned char& Polynom::operator[] (size_t i) const
 {
-    for (size_t i = 0; i < coefficients.size(); i++)
-    {
-        coefficients[i] = c;
-    }
-    
+    return coefficients[i + index_senior_coefficient];
 }
+
+// void Polynom::operator()(unsigned char c)
+// {
+//     for (size_t i = 0; i < coefficients.size(); i++)
+//     {
+//         coefficients[i] = c;
+//     }
+//
+// }
 
 void Polynom::clear()
 {
     coefficients.clear();
+    index_senior_coefficient = 0;
 }
 
 void Polynom::mul_pow_x(size_t n)
@@ -48,22 +44,32 @@ void Polynom::mul_pow_x(size_t n)
 
 void Polynom::del_nulls_in_begin()
 {
-    while (coefficients.size() > 0 && coefficients.front() == 0)
+    size_t n;
+    index_senior_coefficient = 0;
+    for ( n = 0; n < coefficients.size() && coefficients[n] == 0; n++)
+    {}
+    if(n > 0)
     {
-        coefficients.erase(coefficients.begin(), coefficients.begin() + 1);
+        coefficients.erase(coefficients.begin(), coefficients.begin() + n);
+        if(coefficients.size() == 0)
+        {
+            coefficients.push_back(0);
+        }
     }
-    
 }
 
-void Polynom::div(const Polynom& u, const Polynom& v, Polynom& q, Polynom& r)
+void Polynom::div(const Polynom& u, const Polynom& V, Polynom& q, Polynom& r)
 {
-    if(v[0] == 0)
+    Polynom v = V;
+    v.del_nulls_in_begin();
+    r = u;
+    r.del_nulls_in_begin();
+    q.clear();
+    if(v.coefficients.size() == 0)
     {
         throw std::runtime_error("Деление на 0");
     }
-    r = u;
-    q.clear();
-    if(u.deg() >= v.deg())
+    if(r.deg() >= v.deg())
     {
         for (long long k = 0; k <= u.deg() - v.deg(); k++ )
         {
@@ -74,10 +80,20 @@ void Polynom::div(const Polynom& u, const Polynom& v, Polynom& q, Polynom& r)
             }
             r.coefficients.erase(r.coefficients.begin(), r.coefficients.begin() + 1);
         }
-        r.del_nulls_in_begin();
-        if(r.coefficients.size() == 0)
+        // r.del_nulls_in_begin();
+        // if(r.coefficients.size() == 0)
+        // {
+        //     r.coefficients.push_back(0);
+        // }
+        if(r.coefficients.size() < V.coefficients.size() - 1)
         {
-            r.coefficients.push_back(0);
+            // r.shift_right(v.deg() - r.deg());
+            r.coefficients.insert(r.coefficients.begin(), V.coefficients.size() - r.coefficients.size(), 0);
+        }
+        if(r.coefficients.size() + q.coefficients.size() < u.coefficients.size())
+        {
+            q.coefficients.insert(q.coefficients.begin(), u.coefficients.size() - r.coefficients.size() - q.coefficients.size(), 0);
+            // q.shift_right(u.deg() - r.deg() - q.deg());
         }
     }
     else
@@ -142,22 +158,14 @@ Polynom Polynom::operator- (const Polynom& v) const
 }
 
 Polynom::Polynom()
-{}
+{
+    index_senior_coefficient = 0;
+}
 
 Polynom::Polynom(std::string str)
 {   
     size_t i;
-    bool is_null = false;
-    for (i = 0; i < str.length() && str[i] != '1'; i++)
-    {
-        if (str[i] == 0)
-        {
-            is_null = true;
-        }
-        
-    }
-    
-    for (; i < str.length(); i++)
+    for (i = 0; i < str.length(); i++)
     {
         if(str[i] == '1')
         {
@@ -168,37 +176,27 @@ Polynom::Polynom(std::string str)
             coefficients.push_back(0);
         }
     }
-    if(i == str.length() && is_null)
-    {
-        coefficients.push_back(0);
-    }
     
+    search_senior_coefficient();
 }
 
 Polynom::Polynom(uint64_t number)
 {
     uint64_t i = (uint64_t)1<<(sizeof(number)*8 - 1);
-    while (i != 0 && (number&i) == 0)
-    {
-        i>>=1;
-    }
-    if(i == 0)
-    {
-        coefficients.push_back(0);
-    }
     while (i != 0)
     {
         coefficients.push_back((number&i) > 0);
         i>>=1;
     }
     
+    search_senior_coefficient();
     
 }
 
 size_t Polynom::weight() const
 {
     size_t weight = 0;
-    for (size_t i = 0; i < coefficients.size(); i++)
+    for (size_t i = index_senior_coefficient; i < coefficients.size(); i++)
     {
         if(coefficients[i] == 1)
         {
@@ -213,6 +211,7 @@ void Polynom::cyclic_left_shift(size_t n)
     size_t N = n%coefficients.size();
     coefficients.insert(coefficients.end(), coefficients.begin(), coefficients.begin() + N);
     coefficients.erase(coefficients.begin(), coefficients.begin() + N);
+    search_senior_coefficient();
 }
 
 void Polynom::cyclic_right_shift(size_t n)
@@ -221,6 +220,7 @@ void Polynom::cyclic_right_shift(size_t n)
     std::vector<unsigned char> tmp(coefficients.end() - n, coefficients.end());
     coefficients.insert(coefficients.begin(), tmp.begin(), tmp.end());
     coefficients.erase(coefficients.end() - N, coefficients.end());
+    search_senior_coefficient();
 }
 
 void Polynom::shift_left(size_t n)
@@ -228,6 +228,7 @@ void Polynom::shift_left(size_t n)
     size_t N = std::min(n, coefficients.size());
     coefficients.erase(coefficients.begin(), coefficients.begin() + N);
     coefficients.insert(coefficients.end(), N, 0);
+    search_senior_coefficient();
 
 }
 
@@ -236,6 +237,20 @@ void Polynom::shift_right(size_t n)
     size_t N = std::min(n, coefficients.size());
     coefficients.erase(coefficients.end() - N, coefficients.end());
     coefficients.insert(coefficients.begin(), N, 0);
+    search_senior_coefficient();
 }
 
-
+void Polynom::search_senior_coefficient()
+{
+    size_t i;
+    for (i = 0; i < coefficients.size() && coefficients[i] == 0; i++)
+    {}
+    if(coefficients.size() > 0)
+    {
+        index_senior_coefficient = (i == coefficients.size())? i - 1: i;
+    }
+    else
+    {
+        index_senior_coefficient = 0;
+    }
+}

@@ -5,6 +5,8 @@ class Polynom
 {
     private:
     std::vector<unsigned char> coefficients;//коэффициент при x^0 стоит в конце вектора, при x^1 предпоследний и т.д.
+    size_t index_senior_coefficient;
+    void search_senior_coefficient();
     public:
     Polynom();
     Polynom(std::string);
@@ -19,7 +21,6 @@ class Polynom
     Polynom operator+ (const Polynom&) const;
     Polynom operator- (const Polynom&) const;
     size_t deg() const;
-    size_t deg(size_t new_deg, unsigned char c);
     void clear();
     unsigned char& operator[] (size_t i);
     const unsigned char& operator[] (size_t i) const;

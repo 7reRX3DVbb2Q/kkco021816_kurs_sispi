@@ -22,6 +22,7 @@ unsigned char& Polynom::operator[] (size_t i)
 {
     return coefficients[i];
 }
+
 const unsigned char& Polynom::operator[] (size_t i) const
 {
     return coefficients[i];
@@ -48,21 +49,30 @@ void Polynom::mul_pow_x(size_t n)
 
 void Polynom::del_nulls_in_begin()
 {
-    while (coefficients.size() > 0 && coefficients.front() == 0)
+    if(coefficients.size() > 0)
     {
-        coefficients.erase(coefficients.begin(), coefficients.begin() + 1);
+        while (coefficients.size() > 0 && coefficients.front() == 0)
+        {
+            coefficients.erase(coefficients.begin(), coefficients.begin() + 1);
+        }
+        if (coefficients.size() == 0)
+        {
+            coefficients.push_back(0);
+        }
+        
     }
-    
 }
 
-void Polynom::div(const Polynom& u, const Polynom& v, Polynom& q, Polynom& r)
+void Polynom::div(Polynom u, Polynom v, Polynom& q, Polynom& r)
 {
+    u.del_nulls_in_begin();
+    v.del_nulls_in_begin();
+    r = u;
+    q.clear();
     if(v[0] == 0)
     {
         throw std::runtime_error("Деление на 0");
     }
-    r = u;
-    q.clear();
     if(u.deg() >= v.deg())
     {
         for (long long k = 0; k <= u.deg() - v.deg(); k++ )
@@ -87,10 +97,12 @@ void Polynom::div(const Polynom& u, const Polynom& v, Polynom& q, Polynom& r)
     
 }
 
-void Polynom::sum(Polynom& a, const Polynom& b, const Polynom& c)
+void Polynom::sum(Polynom& a, Polynom b, Polynom c)
 {
     const Polynom* max;
     const Polynom* min;
+    b.del_nulls_in_begin();
+    c.del_nulls_in_begin();
     if(c.deg() > b.deg())
     {
         max = &c;
@@ -238,4 +250,9 @@ void Polynom::shift_right(size_t n)
     coefficients.insert(coefficients.begin(), N, 0);
 }
 
-
+Polynom Polynom::cut(size_t deg_min, size_t deg_max)
+{
+    Polynom ret;
+    std::copy(coefficients.end() - deg_max - 1, coefficients.end() - deg_min - 1, std::back_inserter(ret.coefficients));
+    return ret;
+}

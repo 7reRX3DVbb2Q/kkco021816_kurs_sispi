@@ -9,8 +9,8 @@ class Polynom
     Polynom();
     Polynom(std::string);
     Polynom(uint64_t);
-    static void div(const Polynom& u, const Polynom& v, Polynom& q, Polynom& r);
-    static void sum(Polynom& a, const Polynom& b, const Polynom& c);
+    static void div(Polynom u, Polynom v, Polynom& q, Polynom& r);
+    static void sum(Polynom& a, Polynom b, Polynom c);
     void mul_pow_x(size_t n);
     void del_nulls_in_begin();
     static void mul(Polynom& a, const Polynom& b, const Polynom& c);
@@ -29,4 +29,5 @@ class Polynom
     void cyclic_right_shift(size_t n);
     void shift_left(size_t n);
     void shift_right(size_t n);
+    Polynom cut(size_t deg_min, size_t deg_max);
 };

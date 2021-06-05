@@ -1,61 +1,41 @@
 #include"crc.h"
-std::vector<std::pair<size_t, Polynom>> polynom_table = //(1 стобец - n, второй - многочлен)
-                                                        //Таблица порождающих многочленов из книги
-                                                        //<<Кодирование информации (двоичные коды) 
-                                                        //Березюк Н. Т., Андрущенко А. Г., Мощицкий С. С. и др.>>
-                                                        //страница 182 
-{
-    std::make_pair(15,   Polynom(x(6)|x(3)|x(2)|x(1)|x(0))),
-    std::make_pair(27,   Polynom(x(7)|x(4)|x(1)|x(0))),
-    std::make_pair(63,   Polynom(x(8)|x(5)|x(2)|x(1)|x(0))),
-    std::make_pair(121,  Polynom(x(9)|x(6)|x(1)|x(0))),
-    std::make_pair(255,  Polynom(x(10)|x(7)|x(4)|x(2)|x(0))),
-    std::make_pair(487,  Polynom(x(11)|x(9)|x(7)|x(6)|x(5)|x(4)|x(3)|x(2)|x(1)|x(0))),
-    std::make_pair(1023, Polynom(x(12)|x(5)|x(4)|x(3)|x(0))),
-    std::make_pair(1999, Polynom(x(13)|x(12)|x(11)|x(9)|x(8)|x(7)|x(6)|x(4)|x(3)|x(2)|x(0))),
-    std::make_pair(19,   Polynom(x(8)|x(6)|x(4)|x(1)|x(0))),
-    std::make_pair(35,   Polynom(x(9)|x(8)|x(4)|x(3)|x(0))),
-    std::make_pair(82,   Polynom(x(10)|x(7)|x(5)|x(3)|x(2)|x(0))),
-    std::make_pair(164,  Polynom(x(11)|x(10)|x(7)|x(5)|x(3)|x(2)|x(0))),
-    std::make_pair(511,  Polynom(x(12)|x(8)|x(5)|x(3)|x(0))),
-    std::make_pair(1023, Polynom(x(13)|x(12)|x(6)|x(3)|x(1)|x(0))),
-    std::make_pair(1647, Polynom(x(14)|x(13)|x(10)|x(9)|x(8)|x(6)|x(5)|x(4)|x(3)|x(0))),
-    std::make_pair(24,   Polynom(x(10)|x(7)|x(6)|x(5)|x(3)|x(2)|x(0))),
-    std::make_pair(47,   Polynom(x(11)|x(9)|x(7)|x(5)|x(4)|x(3)|x(2)|x(1)|x(0))),
-    std::make_pair(127,  Polynom(x(12)|x(11)|x(8)|x(7)|x(6)|x(3)|x(1)|x(0))),
-    std::make_pair(290,  Polynom(x(13)|x(10)|x(7)|x(6)|x(5)|x(2)|x(0))),
-    std::make_pair(765,  Polynom(x(14)|x(9)|x(8)|x(2)|x(0))),
-    std::make_pair(31,   Polynom(x(12)|x(11)|x(9)|x(6)|x(5)|x(4)|x(3)|x(1)|x(0))),
-    std::make_pair(64,   Polynom(x(13)|x(11)|x(8)|x(7)|x(6)|x(3)|x(1)|x(0))),
-    std::make_pair(165,  Polynom(x(14)|x(12)|x(11)|x(10)|x(9)|x(8)|x(7)|x(5)|x(3)|x(0))),
-    std::make_pair(363,  Polynom(x(15)|x(14)|x(13)|x(12)|x(8)|x(7)|x(6)|x(5)|x(4)|x(2)|x(1)|x(0))),
-    std::make_pair(819,  Polynom(x(16)|x(15)|x(14)|x(13)|x(11)|x(10)|x(9)|x(7)|x(4)|x(3)|x(2)|x(0))),
-    std::make_pair(31,   Polynom(x(14)|x(11)|x(9)|x(8)|x(7)|x(3)|x(0))),
-    std::make_pair(99,   Polynom(x(15)|x(11)|x(10)|x(9)|x(8)|x(4)|x(3)|x(0))),
-    std::make_pair(144,  Polynom(x(16)|x(15)|x(14)|x(13)|x(12)|x(11)|x(10)|x(9)|x(8)|x(7)|x(4)|x(2)|x(1)|x(0))),
-    std::make_pair(50,   Polynom(x(16)|x(13)|x(11)|x(8)|x(6)|x(4)|x(3)|x(0)))
-};
+#include <iostream>
+#include <stdexcept>
 
-void CRC::code(Polynom Q, Polynom& result){
+void CRC::code(Polynom Q, Polynom& result)
+{
+    size_t shift;
     result.clear();
     Q.mul_pow_x(polynom.deg());
     result = Q + Q%polynom;
+    shift = n - result.size();
+    if(shift > 0)
+    {
+        result.mul_pow_x(shift);
+        result.shift_right(shift);
+    }
 }
 
-void CRC::decode(const Polynom& Q, Polynom& result){
+void CRC::decode(Polynom Q, Polynom& result)
+{
+    Q.find_first_not_null_coefficient();
     Polynom rem = Q%polynom;
     Polynom Q2;
     size_t shift_count;
     result.clear();
-    if(rem.weight() <= t_n)
+    if(rem.weight() <= s)
     {
         result = Q + rem;
     }
     else
     {
         Q2 = Q;
-        for ( shift_count = 0; rem.weight() > t_n; shift_count++)
+        for ( shift_count = 0; rem.weight() > s; shift_count++)
         {
+            if(shift_count > n)
+            {
+                throw std::runtime_error("Ошибка декодирования: при исправлении ошибок никакой сдвиг не дает нулевой остаток при делении на образующий полином");
+            }
             Q2.cyclic_left_shift(1);
             rem = Q2%polynom;
 
@@ -63,27 +43,73 @@ void CRC::decode(const Polynom& Q, Polynom& result){
         result = Q2 + rem;
         result.cyclic_right_shift(shift_count);
     }
+    result = result.cut(polynom.deg(), result.size() - 1);
+}
+
+void CRC::coder(Polynom Q, Polynom& result)
+{
+    result = Q;
+    result.mul_pow_x(polynom.deg());
+    result.resize(n);
+    for (size_t i = 0; i < k; i++)
+    {
+        if(result(i) == 1)
+        {
+            result += G[G.size() - 1 - i];
+        }
+    }
+    
 }
 
 CRC::CRC()
 {
-    size_t m;
-    // polynom = Polynom(0b1101);
-    polynom = polynom_table[0].second;
-    n = polynom_table[0].first;
-    k = n - polynom.deg();
-    m = log_2_floor(n + 1)/2;
-    t_n = polynom.deg() / m - 1;   
+    make_new_code(Polynom(0b111010001), 15,  2);
 }
-CRC::CRC(const Polynom& src, size_t n, size_t k, size_t t_n)
+
+CRC::CRC(const Polynom& src, size_t n, size_t s)
 {
+    make_new_code(src, n, s);
+}
+
+void CRC::make_new_code(const Polynom& src, size_t n, size_t s)
+{
+    size_t k = n - src.deg();
+    Polynom cycle_search;
+    Polynom p(1);
+    #define r n - k
+    if (n <= k)
+    {
+        std::logic_error("n <= k");
+    }
+    
+    p.mul_pow_x(src.deg());
+    G.resize(k);
+    cycle_search = p%src;
+    for (size_t i = 0; i < k; i++)
+    {
+        G[i] = p%src;
+        if(i > 0 && G[i] == cycle_search)
+        {
+            std::runtime_error("Данный образующий полином не обеспечивает нужное количество остатков от деления");
+        }
+        else if (G[i].weight() < 2*s)
+        {
+            std::runtime_error("Вес одной из строк образующей матрицы меньше необходимого кодового расстояния, для обеспечения возможности исправления данного количества ошибок");
+        }
+        else
+        {
+            p.mul_pow_x(1);
+            G[i].resize(r);
+        }
+    }
     polynom = src;
     this->n = n;
     this->k = k;
-    this->t_n = t_n;
+    this->s = s;
+    #undef r
 }
 
-size_t log_2_floor(size_t n)
+size_t log_2_floor(uint64_t n)
 {
     size_t ret= 0;
     for (; n > 0; ret++)
@@ -91,4 +117,24 @@ size_t log_2_floor(size_t n)
         n>>=1;
     }
     return ret;
+}
+
+size_t CRC::get_s() const
+{
+    return s;
+}
+
+size_t CRC::get_n() const
+{
+    return n;
+}
+
+size_t CRC::get_k() const
+{
+    return k;
+}
+
+const Polynom& CRC::get_polynom() const
+{
+    return polynom;
 }

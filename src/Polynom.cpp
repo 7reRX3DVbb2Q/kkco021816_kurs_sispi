@@ -119,12 +119,6 @@ void Polynom::div(Polynom u, Polynom v, Polynom& q, Polynom& r)
         }
         r.find_first_not_null_coefficient();
         q.first_not_null_coefficient = 0;
-        // r.del_nulls_in_begin();
-        // if(r.first_not_null_coefficient == r.coefficients.size())
-        // {
-        //     r.coefficients.push_back(0);
-        //     r.first_not_null_coefficient = 1;
-        // }
     }
     else
     {
@@ -368,6 +362,7 @@ void Polynom::reverse()
 {
     del_nulls_in_begin();
     std::reverse(coefficients.begin(), coefficients.end());
+    find_first_not_null_coefficient();
 }
 
 bool Polynom::is_null() const

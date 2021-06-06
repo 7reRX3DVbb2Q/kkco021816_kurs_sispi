@@ -4,6 +4,12 @@
 #include <stdexcept>
 #include<ctime>
 #include<iomanip>
+#if defined(__linux__) || defined(__unix__) || defined(__unix) || defined(unix) || (defined(__APPLE__) && defined(__MACH__))
+    #define UNIX
+#elif defined(_WIN32)
+    #define windows
+    #include<windows.h>
+#endif
 using namespace std;
 
 void print(uint8_t* point, size_t size, uint8_t radix, size_t n);
@@ -21,8 +27,11 @@ int main()
     Polynom result2;
     vector<char> decode_text;
     srand(time(NULL));
+    #ifdef windows
+        SetConsoleOutputCP(1251);
+        SetConsoleCP(1251);
+    #endif
     get_polynom:
-    cout<<(x(33)|x(32)|x(30)|x(29)|x(28)|x(27)|x(26)|x(23)|x(22)|x(20)|x(15)|x(14)|x(13)|x(11)|x(9)|x(8)|x(6)|x(5)|x(2)|x(1)|x(0))<<endl;
     try
     {
         cout<<endl<<"Использовать образующий полином по умолчанию (0), или ввести свой? (1)"<<endl;
@@ -189,7 +198,9 @@ int main()
         print(&decode_text[tmp], decode_text.size() - tmp);
         cout<<endl;
         
-    } while (cin.eof() == false);
+        cout<<"Выйти из программы? (1) - Да, (0) - Нет"<<endl;
+        cin>>input;
+    } while (cin.eof() == false && input == "0");
     
     return 0;
 }
@@ -220,7 +231,7 @@ void print(uint8_t* point, size_t size, uint8_t radix,  size_t n)
         {
             cout<<setbase(radix)<<(size_t)point[i];
         }
-        cout<<" ";
+        cout<<setbase(10)<<" ";
     }
     
 }

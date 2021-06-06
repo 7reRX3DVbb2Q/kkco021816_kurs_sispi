@@ -9,49 +9,54 @@ class Polynom
 {
     private:
     std::vector<unsigned char> coefficients;//коэффициент при x^0 стоит в конце вектора, при x^1 предпоследний и т.д.
-    size_t first_not_null_coefficient;
+    size_t first_not_null_coefficient;  // В векторе необязательно чтобы старший коэффициент многочлена находился под индексом 0,
+                                        // и данная переменная хранит индекс самого старшего ненулевого коэффицциента
+                                        // Если многочлен равен нулю (все коэффициенты нулевые), то first_not_null_coefficient равен
+                                        // размеру вектора + 1
     public:
     Polynom();
     Polynom(std::string);
     Polynom(uint64_t);
     Polynom(uint8_t* const point, size_t size);
-    static void div(Polynom u, Polynom v, Polynom& q, Polynom& r);
-    static void sum(Polynom& a, Polynom b, Polynom c);
-    void mul_pow_x(size_t n);
-    void del_nulls_in_begin();
-    Polynom operator/ (const Polynom&) const;
-    Polynom operator% (const Polynom&) const;
-    Polynom operator+ (const Polynom&) const;
-    Polynom operator- (const Polynom&) const;
+    static void div(Polynom u, Polynom v, Polynom& q, Polynom& r);// Деление многочленов. u = vq + r
+    static void sum(Polynom& a, Polynom b, Polynom c);//Сложение многочленов. a = b + c
+    void mul_pow_x(size_t n);//Умножение многочлена на x в степени n, this = this * x^n
+    void del_nulls_in_begin();  //удаляет все нулевые коэффициенты в начале вектора, пока не встретит ненулевой коэффициент.  
+                                //Если все коэффициенты были нулевыми, то после выполнение процедуры останеться только 1 нулевой коэффициент
+                                //(вектор coefficients будет равным содержать только один нулевой элемент) и поле first_not_null_coefficient примет значение 1
+    Polynom operator/ (const Polynom&) const;//Делит многочлены и возвращает частное
+    Polynom operator% (const Polynom&) const;//Делит многочлены и возвращает остаток
+    Polynom operator+ (const Polynom&) const;//Суммирует многочлены и возвращает результат
+    Polynom operator- (const Polynom&) const;//Вычитает многочлены и возвращает результат
     void operator+= (const Polynom&);
     void operator-= (const Polynom&);
-    bool operator== (const Polynom&);
-    size_t deg() const;
-    // size_t deg(size_t new_deg, unsigned char c);
-    void clear();
-    unsigned char& operator[] (size_t i);
-    const unsigned char& operator[] (size_t i) const;
-    unsigned char& operator() (size_t i);
-    const unsigned char& operator() (size_t i) const;
-    size_t weight() const;
-    void cyclic_left_shift(size_t n);
-    void cyclic_right_shift(size_t n);
-    void shift_left(size_t n);
-    void shift_right(size_t n);
-    Polynom cut(size_t deg_min, size_t deg_max) const;
-    size_t size();
-    void find_first_not_null_coefficient();
-    size_t resize(size_t);
-    void reverse();
-    bool is_null() const;
+    bool operator== (const Polynom&);//Проверка многочленов на равенство
+    size_t deg() const;//Возвращает степень многочлена
+    void clear();//Удаляет все коэффициенты и устанавливает first_not_null_coefficient равным нулю
+    unsigned char& operator[] (size_t i);//Возвращает коэффициент при степени i
+    const unsigned char& operator[] (size_t i) const;//Возвращает коэффициент при степени i
+    unsigned char& operator() (size_t i);//Возвращает кожффициент пож индексом вектора i
+    const unsigned char& operator() (size_t i) const;//Возвращает кожффициент пож индексом вектора i
+    size_t weight() const;//Возвращает вес многочлена (количество единиц)
+    void cyclic_left_shift(size_t n);//Циклический сдвиг влево
+    void cyclic_right_shift(size_t n);//Циклический сдвиг вправо
+    void shift_left(size_t n);//Сдвиг влево
+    void shift_right(size_t n);//Сдвиг вправо
+    Polynom cut(size_t deg_min, size_t deg_max) const;//Возвращает коэффициенты при степенях от deg_min до deg_max
+    size_t size();//Возвращает размер вектора coefficients
+    void find_first_not_null_coefficient();//Ищет первый ненулевой старший коэффициент
+    size_t resize(size_t);  //Изменяет размер вектора coefficients. Если нового размера не достаточно для хранения многочлена,
+                            // то вектор будет иметь минимальный рамер необходиый для хранения многочлена данной степени 
+    void reverse();//Переворачиавет вектор коэффициентов (в итоге получится сопряженный многочлен)
+    bool is_null() const;//Возвращает является многочлен нулевым
     template<typename T>
-    void convert(std::vector<T>& output) const
+    void convert(std::vector<T>& output) const//Преобразует многочлен в двоичную последовательность
     {
         output.clear();
         if(coefficients.size() > 0)
         {
             output.resize( ((coefficients.size() - 1)/(sizeof(T)*8)) + 1, 0);
-            for (size_t i = output.size() - 1; i != (uint64_t)-1; i--)
+            for (long long i = output.size() - 1; i >= 0; i--)
             {
                 for (size_t j = 0; j < sizeof(T)*8 && (output.size() - 1 - i)*sizeof(T)*8 + j < coefficients.size(); j++)
                 {
@@ -67,7 +72,7 @@ class Polynom
     }
 
     template<typename T>
-    void set_polynom(T* const point, size_t size)
+    void set_polynom(T* const point, size_t size)//Преобразует двоичную последовательность в многочлен
     {
         T i = 1<<((sizeof(T)*8) - 1);
         size_t j;
@@ -97,6 +102,8 @@ class Polynom
     }
 };
 
+// Ниже был написан функционал ассоциативного дерева, где в качестве ключа используется многочлен, 
+// а в качестве значения произволный тип данных. Но он перестал использоваться.
 //
 // template<class T>
 // struct Node

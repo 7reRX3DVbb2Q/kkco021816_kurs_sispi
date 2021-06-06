@@ -109,15 +109,15 @@ void CRC::make_new_code(const Polynom& src, size_t n, size_t s)
     #undef r
 }
 
-size_t log_2_floor(uint64_t n)
-{
-    size_t ret= 0;
-    for (; n > 0; ret++)
-    {
-        n>>=1;
-    }
-    return ret;
-}
+// size_t log_2_floor(uint64_t n)
+// {
+//     size_t ret= 0;
+//     for (; n > 0; ret++)
+//     {
+//         n>>=1;
+//     }
+//     return ret;
+// }
 
 size_t CRC::get_s() const
 {
